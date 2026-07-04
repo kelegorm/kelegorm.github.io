@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>kelegorm — audio plugin developer</title>
+<meta name="description" content="kelegorm — audio plugin developer. SkyVerb: a binaural weather reverb that turns any sound into weather. KVR Developer Challenge 2026 entry.">
+<meta property="og:title" content="kelegorm — audio plugin developer">
+<meta property="og:description" content="SkyVerb — a binaural weather reverb. Turns any sound into weather. Coming July 6, 2026.">
+<meta name="theme-color" content="#080b12">
+<style>
+  :root{
+    --void:#070a11;
+    --deep:#0b1019;
+    --slate:#161d2c;
+    --ink:#eef2fa;
+    --mist:#b3bccf;
+    --faint:#79839a;
+    --glint:#fdf6e8;
+    --gold:#f1ddb4;
+    --line:rgba(180,196,224,0.10);
+  }
+
+  *{box-sizing:border-box;}
+
+  html,body{margin:0;padding:0;}
+
+  body{
+    min-height:100vh;
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Helvetica Neue",sans-serif;
+    font-weight:300;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    position:relative;
+    overflow-x:hidden;
+    /* the painted sky: warm glow center-right, cool glow upper-centre, over deep slate,
+       matched to the plugin's own haze */
+    background:
+      radial-gradient(120% 90% at 68% 30%, rgba(196,182,150,0.10) 0%, rgba(196,182,150,0) 42%),
+      radial-gradient(90% 70% at 42% 20%, rgba(150,172,208,0.13) 0%, rgba(150,172,208,0) 46%),
+      radial-gradient(140% 120% at 50% 8%, #1a2334 0%, #0d131f 44%, #070a11 100%);
+    background-attachment:fixed;
+  }
+
+  /* faint drifting star dust — single element, many box-shadows, no JS */
+  .dust{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+  }
+  .dust::before,.dust::after{
+    content:"";
+    position:absolute;
+    width:1px;height:1px;border-radius:50%;
+    background:transparent;
+  }
+  .dust::before{
+    top:12%;left:8%;
+    box-shadow:
+      6vw 4vh 0 0 rgba(253,246,232,0.55), 22vw 14vh 0 0 rgba(200,214,238,0.35),
+      37vw 6vh 0 0 rgba(253,246,232,0.30), 51vw 20vh 0 0 rgba(220,228,244,0.45),
+      64vw 9vh 0 0 rgba(253,246,232,0.28), 78vw 17vh 0 0 rgba(210,220,240,0.40),
+      88vw 5vh 0 0 rgba(253,246,232,0.50), 14vw 30vh 0 0 rgba(200,214,238,0.22),
+      33vw 40vh 0 0 rgba(253,246,232,0.30), 70vw 34vh 0 0 rgba(215,225,242,0.34),
+      92vw 44vh 0 0 rgba(253,246,232,0.24), 4vw 52vh 0 0 rgba(205,216,238,0.28);
+    animation:twinkle 7.5s ease-in-out infinite;
+  }
+  .dust::after{
+    top:60%;left:20%;
+    box-shadow:
+      10vw 6vh 0 0 rgba(253,246,232,0.34), 26vw 2vh 0 0 rgba(210,220,240,0.24),
+      44vw 12vh 0 0 rgba(253,246,232,0.40), 58vw 4vh 0 0 rgba(200,214,238,0.22),
+      73vw 15vh 0 0 rgba(253,246,232,0.30), 86vw 8vh 0 0 rgba(215,225,242,0.36),
+      2vw 20vh 0 0 rgba(253,246,232,0.26), 35vw 26vh 0 0 rgba(205,216,238,0.30),
+      66vw 30vh 0 0 rgba(253,246,232,0.22);
+    animation:twinkle 9.5s ease-in-out infinite 1.2s;
+  }
+
+  /* four-pointed glints — echoing the plugin's binaural events */
+  .glint{
+    position:fixed;
+    z-index:0;
+    width:4px;height:4px;border-radius:50%;
+    background:var(--glint);
+    box-shadow:0 0 8px 2px rgba(253,246,232,0.55);
+    opacity:.82;
+    pointer-events:none;
+  }
+  .glint::before,.glint::after{
+    content:"";position:absolute;top:50%;left:50%;
+    transform:translate(-50%,-50%);
+  }
+  .glint::before{width:56px;height:1px;background:linear-gradient(90deg,transparent,rgba(253,246,232,.65),transparent);}
+  .glint::after{width:1px;height:56px;background:linear-gradient(180deg,transparent,rgba(253,246,232,.65),transparent);}
+  .glint.g1{top:18%;left:14%;animation:breathe 6s ease-in-out infinite;}
+  .glint.g2{top:26%;left:82%;transform:scale(.72);animation:breathe 8s ease-in-out infinite .8s;}
+  .glint.g3{top:70%;left:9%;transform:scale(.58);animation:breathe 7s ease-in-out infinite 1.6s;}
+
+  @keyframes twinkle{0%,100%{opacity:.75;}50%{opacity:.32;}}
+  @keyframes breathe{0%,100%{opacity:.85;}50%{opacity:.45;}}
+
+  @media (prefers-reduced-motion:reduce){
+    .dust::before,.dust::after,.glint{animation:none!important;}
+  }
+
+  /* ---- content ---- */
+  .wrap{
+    position:relative;
+    z-index:1;
+    max-width:940px;
+    margin:0 auto;
+    padding:clamp(3.5rem,9vh,7rem) clamp(1.4rem,5vw,2.5rem) 4rem;
+  }
+
+  header.site{
+    display:flex;
+    flex-direction:column;
+    gap:.65rem;
+    padding-bottom:clamp(3rem,8vh,5rem);
+  }
+  .mark{
+    display:flex;
+    align-items:baseline;
+    flex-wrap:wrap;
+    gap:.55rem 1rem;
+  }
+  .mark h1{
+    margin:0;
+    font-size:clamp(1.9rem,4.4vw,2.7rem);
+    font-weight:300;
+    letter-spacing:.02em;
+    color:var(--ink);
+  }
+  .mark h1 .dot{color:var(--gold);}
+  .mark .role{
+    font-size:.74rem;
+    letter-spacing:.34em;
+    text-transform:uppercase;
+    color:var(--faint);
+    font-weight:400;
+    padding-bottom:.28rem;
+  }
+  .bio{
+    margin:0;
+    font-family:Georgia,"Iowan Old Style","Times New Roman",serif;
+    font-style:italic;
+    font-size:clamp(1.05rem,2.5vw,1.28rem);
+    color:var(--mist);
+    font-weight:400;
+    letter-spacing:.01em;
+  }
+
+  .rule{height:1px;border:0;background:var(--line);margin:0 0 clamp(2.6rem,7vh,4rem);}
+
+  /* teaser */
+  .teaser .eyebrow{
+    font-size:.72rem;
+    letter-spacing:.4em;
+    text-transform:uppercase;
+    color:var(--faint);
+    margin:0 0 1.1rem;
+    font-weight:400;
+  }
+  .teaser h2{
+    margin:0 0 .5rem;
+    font-size:clamp(2.9rem,10vw,5.2rem);
+    font-weight:200;
+    letter-spacing:-.005em;
+    line-height:1;
+    background:linear-gradient(150deg,#ffffff 0%,#d7e0f2 42%,#f1ddb4 118%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    -webkit-text-fill-color:transparent;
+    color:#f3f6fc;
+  }
+  .tagline{
+    margin:0 0 clamp(1.6rem,4vh,2.2rem);
+    font-size:clamp(1.05rem,2.7vw,1.4rem);
+    color:var(--ink);
+    font-weight:300;
+    letter-spacing:.005em;
+  }
+  .tagline .em{color:var(--gold);font-style:italic;font-family:Georgia,serif;}
+  .lede{
+    max-width:44rem;
+    margin:0 0 clamp(1.8rem,4vh,2.4rem);
+    font-family:Georgia,"Iowan Old Style","Times New Roman",serif;
+    font-size:clamp(1.1rem,2.5vw,1.32rem);
+    line-height:1.72;
+    color:var(--mist);
+    font-weight:400;
+  }
+  .lede .glow{color:#eef2fa;}
+
+  .status{
+    display:inline-flex;
+    align-items:center;
+    gap:.7rem;
+    flex-wrap:wrap;
+    padding:.6rem 1.05rem;
+    border:1px solid var(--line);
+    border-radius:999px;
+    background:rgba(150,172,208,0.05);
+    font-size:clamp(.82rem,2vw,.94rem);
+    letter-spacing:.02em;
+    color:var(--mist);
+  }
+  .status .beacon{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--gold);
+    box-shadow:0 0 9px 2px rgba(241,221,180,.7);
+    animation:pulse 2.8s ease-in-out infinite;
+    flex:none;
+  }
+  .status b{color:var(--ink);font-weight:500;}
+  .status .free{color:var(--gold);font-weight:400;letter-spacing:.08em;text-transform:uppercase;font-size:.78em;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+  /* screenshot */
+  .stage{
+    margin:clamp(3rem,8vh,5rem) 0 0;
+  }
+  figure.shot{
+    margin:0;
+    border-radius:14px;
+    overflow:hidden;
+    border:1px solid rgba(190,205,232,0.12);
+    box-shadow:
+      0 2px 0 0 rgba(255,255,255,0.04) inset,
+      0 40px 90px -30px rgba(0,0,0,0.85),
+      0 18px 44px -22px rgba(28,42,74,0.6);
+    background:#0a0d14;
+  }
+  figure.shot img{display:block;width:100%;height:auto;}
+  figcaption{
+    margin-top:1.05rem;
+    text-align:center;
+    font-size:.78rem;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--faint);
+  }
+
+  /* footer */
+  footer.site{
+    margin-top:clamp(4rem,10vh,6.5rem);
+    padding-top:2rem;
+    border-top:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:1rem;
+    font-size:.9rem;
+    color:var(--faint);
+  }
+  footer.site a{
+    color:var(--mist);
+    text-decoration:none;
+    letter-spacing:.02em;
+    border-bottom:1px solid transparent;
+    transition:color .25s ease,border-color .25s ease;
+  }
+  footer.site a:hover{color:var(--ink);border-color:var(--gold);}
+  footer.site .copy{letter-spacing:.03em;}
+
+  @media (max-width:520px){
+    .mark{flex-direction:column;gap:.35rem;}
+    .mark .role{padding-bottom:0;}
+    footer.site{flex-direction:column;align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+  <div class="dust" aria-hidden="true"></div>
+  <span class="glint g1" aria-hidden="true"></span>
+  <span class="glint g2" aria-hidden="true"></span>
+  <span class="glint g3" aria-hidden="true"></span>
+
+  <div class="wrap">
+    <header class="site">
+      <div class="mark">
+        <h1>kelegorm<span class="dot">.</span></h1>
+        <span class="role">audio plugin developer</span>
+      </div>
+      <p class="bio">Just a developer in love with sound.</p>
+    </header>
+
+    <hr class="rule">
+
+    <section class="teaser">
+      <p class="eyebrow">Introducing</p>
+      <h2>SkyVerb</h2>
+      <p class="tagline">a binaural weather reverb <span class="em">— turns any sound into weather</span></p>
+
+      <p class="lede">
+        A dense stereo reverb bed paints the open sky, while individual binaural
+        events <span class="glow">— glints, comets, star showers —</span> are placed around
+        your head in true 3D. Clouds drift; the sky answers your playing.
+      </p>
+
+      <span class="status">
+        <span class="beacon" aria-hidden="true"></span>
+        Coming <b>July&nbsp;6,&nbsp;2026</b> &middot; KVR Developer Challenge 2026 entry
+        <span class="free">Free forever</span>
+      </span>
+
+      <div class="stage">
+        <figure class="shot">
+          <img src="skyverb.png" width="1520" height="1136"
+               alt="SkyVerb plugin interface — a painted night sky with glowing binaural events above a row of weather controls: Weather, Ceiling, Light, Wind, Horizon, Gust, Mix.">
+        </figure>
+        <figcaption>SkyVerb &middot; the “Overcast” sky</figcaption>
+      </div>
+    </section>
+
+    <footer class="site">
+      <a href="https://github.com/kelegorm" rel="me noopener">github.com/kelegorm →</a>
+      <span class="copy">© 2026 kelegorm</span>
+    </footer>
+  </div>
+</body>
+</html>
