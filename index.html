@@ -6,8 +6,11 @@
 <title>kelegorm — audio plugin developer</title>
 <meta name="description" content="kelegorm — audio plugin developer. SkyVerb: a binaural weather reverb that turns any sound into weather. KVR Developer Challenge 2026 entry.">
 <meta property="og:title" content="kelegorm — audio plugin developer">
-<meta property="og:description" content="SkyVerb — a binaural weather reverb. Turns any sound into weather. Coming July 6, 2026.">
+<meta property="og:description" content="SkyVerb — a binaural weather reverb. Turns any sound into weather. Out now — free forever.">
 <meta name="theme-color" content="#080b12">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300&display=swap" rel="stylesheet">
 <style>
   :root{
     --void:#070a11;
@@ -165,11 +168,12 @@
     font-weight:400;
   }
   .teaser h2{
-    margin:0 0 .5rem;
-    font-size:clamp(2.9rem,10vw,5.2rem);
+    margin:0 0 .7rem;
+    font-family:'Unbounded',-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    font-size:clamp(2.3rem,8vw,4.1rem);
     font-weight:200;
-    letter-spacing:-.005em;
-    line-height:1;
+    letter-spacing:.01em;
+    line-height:1.08;
     background:linear-gradient(150deg,#ffffff 0%,#d7e0f2 42%,#f1ddb4 118%);
     -webkit-background-clip:text;
     background-clip:text;
@@ -218,6 +222,34 @@
   .status b{color:var(--ink);font-weight:500;}
   .status .free{color:var(--gold);font-weight:400;letter-spacing:.08em;text-transform:uppercase;font-size:.78em;}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+  /* downloads */
+  .downloads{
+    display:flex;
+    gap:1rem;
+    flex-wrap:wrap;
+    margin:clamp(1.6rem,4vh,2.2rem) 0 0;
+  }
+  .dl{
+    display:flex;
+    flex-direction:column;
+    gap:.3rem;
+    padding:1rem 1.35rem;
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:rgba(150,172,208,0.06);
+    text-decoration:none;
+    transition:border-color .25s ease,background .25s ease;
+  }
+  .dl:hover{border-color:var(--gold);background:rgba(241,221,180,0.07);}
+  .dl b{color:var(--ink);font-weight:500;letter-spacing:.02em;}
+  .dl span{color:var(--faint);font-size:.82rem;letter-spacing:.03em;}
+  .dlnote{
+    margin:.9rem 0 0;
+    font-size:.82rem;
+    color:var(--faint);
+    letter-spacing:.02em;
+  }
 
   /* screenshot */
   .stage{
@@ -297,21 +329,34 @@
       <p class="tagline">a binaural weather reverb <span class="em">— turns any sound into weather</span></p>
 
       <p class="lede">
-        A dense stereo reverb bed paints the open sky, while individual binaural
-        events <span class="glow">— glints, comets, star showers —</span> are placed around
-        your head in true 3D. Clouds drift; the sky answers your playing.
+        A dense stereo sky bed paints the open air, while binaural
+        <span class="glow">stars answer your playing</span> — placed around your head in
+        true 3D, at the exact directions you hear them. Clouds drift on the wind;
+        the sky is alive to every phrase.
       </p>
 
       <span class="status">
         <span class="beacon" aria-hidden="true"></span>
-        Coming <b>July&nbsp;6,&nbsp;2026</b> &middot; KVR Developer Challenge 2026 entry
+        <b>Out now</b> &middot; v1.0.16 &middot; KVR Developer Challenge 2026 entry
         <span class="free">Free forever</span>
       </span>
+
+      <div class="downloads">
+        <a class="dl" href="https://github.com/kelegorm/kelegorm.github.io/releases/latest/download/SkyVerb-macOS.zip">
+          <b>Download for macOS</b>
+          <span>VST3 + AU &middot; universal (Intel &amp; Apple Silicon) &middot; macOS 12+</span>
+        </a>
+        <a class="dl" href="https://github.com/kelegorm/kelegorm.github.io/releases/latest/download/SkyVerb-Windows-x64.zip">
+          <b>Download for Windows</b>
+          <span>VST3 &middot; 64-bit &middot; Windows 10/11 (Windows-on-ARM via x64 hosts)</span>
+        </a>
+      </div>
+      <p class="dlnote">Unsigned freeware — first-run notes are in the included manual. A Linux build is on the roadmap; meanwhile the Windows VST3 runs via yabridge.</p>
 
       <div class="stage">
         <figure class="shot">
           <img src="skyverb.png" width="1520" height="1136"
-               alt="SkyVerb plugin interface — a painted night sky with glowing binaural events above a row of weather controls: Weather, Ceiling, Light, Wind, Horizon, Gust, Mix.">
+               alt="SkyVerb plugin interface — a painted night sky with glowing clouds and stars above a row of weather knobs.">
         </figure>
         <figcaption>SkyVerb &middot; the “Overcast” sky</figcaption>
       </div>
