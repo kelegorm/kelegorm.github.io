@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>kelegorm — audio plugin developer</title>
-<meta name="description" content="kelegorm — audio plugin developer. SkyVerb: a binaural weather reverb that turns any sound into weather. KVR Developer Challenge 2026 entry.">
+<meta name="description" content="kelegorm — audio plugin developer. SkyVerb: an ambient, spatial reverb built on two layers — a wide stereo sky and binaural stars that answer your playing. KVR Developer Challenge 2026 entry.">
 <meta property="og:title" content="kelegorm — audio plugin developer">
-<meta property="og:description" content="SkyVerb — a binaural weather reverb. Turns any sound into weather. Out now — free forever.">
+<meta property="og:description" content="SkyVerb — an ambient, spatial reverb. A wide stereo sky and binaural stars that answer your playing. Out now — free forever.">
 <meta name="theme-color" content="#080b12">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -199,6 +199,30 @@
   }
   .lede .glow{color:#eef2fa;}
 
+  .feat{
+    list-style:none;
+    max-width:44rem;
+    margin:0 0 clamp(1.8rem,4vh,2.4rem);
+    padding:0;
+  }
+  .feat li{
+    position:relative;
+    padding:.5rem 0 .5rem 1.5rem;
+    border-top:1px solid var(--line);
+    font-size:clamp(.98rem,2.2vw,1.08rem);
+    color:var(--mist);
+    letter-spacing:.005em;
+  }
+  .feat li:first-child{border-top:0;}
+  .feat li::before{
+    content:"";
+    position:absolute;
+    left:2px;top:1.15em;
+    width:5px;height:5px;border-radius:50%;
+    background:var(--gold);
+    box-shadow:0 0 7px 1px rgba(241,221,180,.55);
+  }
+
   .status{
     display:inline-flex;
     align-items:center;
@@ -326,14 +350,25 @@
     <section class="teaser">
       <p class="eyebrow">Introducing</p>
       <h2>SkyVerb</h2>
-      <p class="tagline">a binaural weather reverb <span class="em">— turns any sound into weather</span></p>
+      <p class="tagline">an ambient, spatial reverb <span class="em">— built on two layers, not one</span></p>
 
       <p class="lede">
-        A dense stereo sky bed paints the open air, while binaural
-        <span class="glow">stars answer your playing</span> — placed around your head in
-        true 3D, at the exact directions you hear them. Clouds drift on the wind;
-        the sky is alive to every phrase.
+        A wide, continuous stereo wash — the <span class="glow">sky</span> — paints long,
+        open tails with movement in them. Over it, a set of small binaural events — the
+        <span class="glow">stars</span> — sit at real directions around your head. As you
+        play, the stars answer your notes and flash exactly where you hear them; a spark on
+        the right really is on your right. They can reply at once or hold back, free or
+        locked to the host tempo, so the answers fall into the gaps between your phrases.
       </p>
+
+      <ul class="feat">
+        <li>Two-layer engine — a dense stereo sky plus binaural 3D stars, decoupled from the tail</li>
+        <li>Stars that react to your playing, with a tempo-synced or free response delay</li>
+        <li>Eight factory presets, each a distinct space — Overcast, Clear, Sky Opening, Cirrus, Aurora, Storm, Vocal Sky, Cinematic Overcast</li>
+        <li>A/B compare, your own saved presets and favorites, and a freely resizable window</li>
+        <li>Headphones mode for full binaural placement; speaker mode for a wide, mono-safe fold</li>
+        <li>macOS VST3 &amp; Audio Unit, Windows VST3 — free, with no time limit</li>
+      </ul>
 
       <span class="status">
         <span class="beacon" aria-hidden="true"></span>
@@ -344,9 +379,9 @@
       <div class="stage">
         <figure class="shot">
           <img src="skyverb.png" width="1824" height="1344"
-               alt="SkyVerb plugin interface — a painted night sky with glowing clouds and stars above a row of weather knobs.">
+               alt="SkyVerb plugin interface — a live sky view with drifting clouds and bright binaural stars above the SKY, STARS and OUT knob rows.">
         </figure>
-        <figcaption>SkyVerb &middot; the “Overcast” sky</figcaption>
+        <figcaption>SkyVerb &middot; the “Storm” sky</figcaption>
       </div>
     </section>
 
